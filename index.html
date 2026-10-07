@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nomarc | Arc Testnet DeFi</title>
+  <link rel="icon" type="image/png" href="/assets/nomarc_logo.png">
+  <script type="module">
+    import { Buffer } from 'buffer';
+    window.Buffer = Buffer;
+    window.global = window;
+    window.process = { env: {} };
+  </script>
+  <!-- Google Fonts: Kanit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <!-- STICKY TOP NAVIGATION BAR (PANCAKESWAP STYLE) -->
+  <header class="topnav">
+    <div class="topnav-inner">
+      <div class="topnav-left">
+        <!-- Logo & Branding -->
+        <a href="#" class="topnav-brand nav-trigger" data-target="swap">
+          <img src="/assets/nomarc_logo.png" alt="Nomarc Logo" />
+          <div class="topnav-brand-text">
+            <span class="topnav-brand-title">Nomarc</span>
+            <span class="topnav-brand-tag">Arc Testnet</span>
+          </div>
+        </a>
+
+        <!-- Main Navigation Links & Dropdowns -->
+        <nav class="topnav-menu">
+          <!-- Trade Dropdown (Swap & Prediction) -->
+          <div class="topnav-dropdown">
+            <button class="topnav-dropdown-trigger">
+              Trade <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+            </button>
+            <div class="topnav-dropdown-panel">
+              <button class="nav-btn active" data-target="swap">
+                <i data-lucide="repeat"></i> Swap / FX
+              </button>
+              <button class="nav-btn" data-target="prediction">
+                <i data-lucide="trending-up"></i> Prediction Markets
+              </button>
+            </div>
+          </div>
+
+          <!-- Earn Dropdown (Lending & AI Agents) -->
+          <div class="topnav-dropdown">
+            <button class="topnav-dropdown-trigger">
+              Earn <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+            </button>
+            <div class="topnav-dropdown-panel">
+              <button class="nav-btn" data-target="lending">
+                <i data-lucide="landmark"></i> Lending Pool
+              </button>
+              <button class="nav-btn" data-target="agents">
+                <i data-lucide="cpu"></i> AI Agent Hub
+              </button>
+            </div>
+          </div>
+
+          <!-- Bridge Direct Link -->
+          <button class="topnav-item nav-btn" data-target="bridge">
+            <i data-lucide="arrow-right-left" style="width:16px; height:16px;"></i> Bridge
+          </button>
+
+          <!-- More Dropdown -->
+          <div class="topnav-dropdown">
+            <button class="topnav-dropdown-trigger">
+              More <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+            </button>
+            <div class="topnav-dropdown-panel">
+              <button class="nav-btn" data-target="merchant">
+                <i data-lucide="receipt"></i> Merchant Pay
+              </button>
+              <button class="nav-btn" data-target="activity">
+                <i data-lucide="history"></i> Activity & Score
+              </button>
+              <button class="nav-btn" data-target="dashboard">
+                <i data-lucide="layout-dashboard"></i> Portfolio
+              </button>
+              <button type="button" id="btn-open-hermes-nav">
+                <i data-lucide="message-square"></i> Hermes Copilot
+              </button>
+              <a href="/docs.html" target="_blank">
+                <i data-lucide="book-open"></i> Technical Docs <i data-lucide="external-link" style="width:12px; height:12px; margin-left:auto;"></i>
+              </a>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <!-- Right Header Actions: Network Pill, Theme Toggle, Wallet -->
+      <div class="topnav-actions">
+        <div class="network-pill" title="Network: Arc Testnet (Chain ID 5042002)">
+          <div class="network-indicator-dot"></div>
+          <span>Arc Testnet</span>
+        </div>
+        
+        <button id="btn-theme-toggle" class="btn-theme-toggle" title="Toggle Light/Dark Theme">
+          <i data-lucide="sun" id="theme-toggle-icon" style="width:18px; height:18px;"></i>
+        </button>
+
+        <div id="wallet-status-container">
+          <button id="btn-connect-wallet" class="btn-connect-wallet">
+            <i data-lucide="wallet" style="width:16px; height:16px;"></i> Connect Wallet
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="main-content">
+    <!-- TOAST NOTIFICATIONS WRAPPER -->
+    <div id="toasts" class="toasts-wrapper"></div>
+
+    <!-- Hidden compatibility title for legacy JS -->
+    <div id="page-current-title" style="display: none;">Swap</div>
+
+    <!-- PAGE: DASHBOARD (WALLET-GATED PORTFOLIO) -->
+    <section id="dashboard" class="page-section">
+      <!-- Disconnected State Prompt -->
+      <div id="dashboard-disconnected-view" class="portfolio-gated-box">
+        <div class="portfolio-gated-icon">
+          <i data-lucide="wallet" style="width: 32px; height: 32px;"></i>
+        </div>
+        <h2>Your Arc Portfolio</h2>
+        <p>Connect your wallet to monitor your registered AI agents, active escrow jobs, lending health, and on-chain activity.</p>
+        <button type="button" class="btn-primary btn-pill" onclick="document.getElementById('btn-connect-wallet').click();" style="padding: 12px 28px;">
+          <i data-lucide="wallet"></i> Connect Wallet
+        </button>
+      </div>
+
+      <!-- Connected Portfolio View -->
+      <div id="dashboard-connected-view" style="display: none;">
+        <div style="margin-bottom: 24px;">
+          <h1 style="font-size: 26px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Portfolio Overview</h1>
+          <p style="font-size: 14px; color: var(--text-secondary);">Your decentralized asset positions & protocol activity on Arc Testnet.</p>
+        </div>
+
+        <!-- 4 Clean Stat Cards -->
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px;">
+          <!-- Card 1: Registered Agents -->
+          <div class="card" style="padding: 20px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Registered Agents</div>
+            <div id="stat-agents" style="font-size: 28px; font-weight: 800; color: var(--text-primary);">0</div>
+          </div>
+
+          <!-- Card 2: Active Escrows -->
+          <div class="card" style="padding: 20px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Active Escrows</div>
+            <div id="stat-jobs" style="font-size: 28px; font-weight: 800; color: var(--text-primary);">0</div>
+          </div>
+
+          <!-- Card 3: USDC Settled -->
+          <div class="card" style="padding: 20px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>USDC Settled</span>
+              <button type="button" id="btn-usdc-settled-info" onclick="window.toggleModal && window.toggleModal('modal-usdc-settled-info', true)" style="background: none; border: none; color: var(--color-accent); cursor: pointer; padding: 0;">
+                <i data-lucide="help-circle" style="width: 14px; height: 14px;"></i>
+              </button>
+            </div>
+            <div id="stat-volume" style="font-size: 24px; font-weight: 800; color: var(--text-primary);">0.00 USDC</div>
+          </div>
+          <!-- Card 4: Lending Health Factor -->
+          <div class="card" style="padding: 20px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Lending Health Factor</div>
+            <div id="dashboard-health-factor" style="font-size: 28px; font-weight: 800; color: var(--color-success);">--</div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Section -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="activity" style="color: var(--color-primary); width: 20px; height: 20px;"></i>
+              Recent Operations
+            </h3>
+            <button class="btn-secondary nav-trigger" data-target="activity" style="padding: 6px 14px; font-size: 13px;">
+              View All Activity
+            </button>
+          </div>
+          <div id="recent-activity-list" style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="loader-container" style="padding: 24px;">
+              <p style="color: var(--text-secondary); font-size: 14px;">Connect wallet to scan activity logs...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: AI AGENTS -->
+    <section id="agents" class="page-section">
+      <!-- Premium Top Sub-Navigation Tab Bar -->
+      <div class="agent-hub-nav" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: rgba(255,255,255,0.015); padding: 0.35rem; border-radius: 8px; border: 1px solid var(--card-border); max-width: fit-content;">
+        <button class="agent-hub-tab active" data-subtarget="agents" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;">
+          <i data-lucide="bot" style="width: 14px; height: 14px;"></i> Registry
+        </button>
+        <button class="agent-hub-tab" data-subtarget="jobs" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;">
+          <i data-lucide="briefcase" style="width: 14px; height: 14px;"></i> Job Escrows
+        </button>
+        <button class="agent-hub-tab" data-subtarget="reputation" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;">
+          <i data-lucide="award" style="width: 14px; height: 14px;"></i> Reputation
+        </button>
+      </div>
+
+      <div class="dashboard-layout">
+        <div>
+          <div class="glass-card">
+            <h2 class="section-title"><i data-lucide="search"></i> Browse AI Agents (ERC-8004)</h2>
+            
+            <!-- Search & Filter Controls -->
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+              <input type="text" id="agent-search-input" class="form-control" placeholder="Search by name, capability, or keyword..." style="flex: 1; min-width: 200px;">
+              <select id="agent-filter-role" class="form-control" style="width: auto; min-width: 150px;">
+                <option value="All">All Categories</option>
+                <option value="Trading & DeFi">Trading & DeFi</option>
+                <option value="Data Analytics">Data Analytics</option>
+                <option value="Content & Creative">Content & Creative</option>
+                <option value="Code & Automation">Code & Automation</option>
+              </select>
+            </div>
+
+            <div id="agents-list" class="agent-grid">
+              <div class="loader-container">
+                <div class="spinner"></div>
+                <p>Scanning ERC-8004 registries...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="glass-card">
+            <h2 class="section-title"><i data-lucide="user-plus"></i> Register AI Agent</h2>
+            <form id="form-register-agent">
+              <div class="form-group">
+                <label for="agent-name">Agent Name</label>
+                <input type="text" id="agent-name" class="form-control" placeholder="e.g. ArbBot v1.0" required>
+              </div>
+              <div class="form-group">
+                <label for="agent-type">Agent Type / Role</label>
+                <select id="agent-type" class="form-control">
+                  <option value="Trading & DeFi">Trading & DeFi</option>
+                  <option value="Data Analytics">Data Analytics</option>
+                  <option value="Content & Creative">Content & Creative</option>
+                  <option value="Code & Automation">Code & Automation</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="agent-desc">Description</label>
+                <textarea id="agent-desc" class="form-control" placeholder="Describe capabilities..." required></textarea>
+              </div>
+              <div class="form-group">
+                <label for="agent-capabilities">Capabilities (Comma separated)</label>
+                <input type="text" id="agent-capabilities" class="form-control" placeholder="e.g. arbitrage, routing">
+              </div>
+              <button type="submit" class="btn-primary">
+                <i data-lucide="cpu"></i> Register Agent Identity
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: JOB BOARD -->
+    <section id="jobs" class="page-section">
+      <!-- Premium Top Sub-Navigation Tab Bar -->
+      <div class="agent-hub-nav" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: rgba(255,255,255,0.015); padding: 0.35rem; border-radius: 8px; border: 1px solid var(--card-border); max-width: fit-content;">
+        <button class="agent-hub-tab" data-subtarget="agents" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;">
+          <i data-lucide="bot" style="width: 14px; height: 14px;"></i> Registry
+        </button>
+        <button class="agent-hub-tab active" data-subtarget="jobs" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;">
+          <i data-lucide="briefcase" style="width: 14px; height: 14px;"></i> Job Escrows
+        </button>
+        <button class="agent-hub-tab" data-subtarget="reputation" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;">
+          <i data-lucide="award" style="width: 14px; height: 14px;"></i> Reputation
+        </button>
+      </div>
+
+      <div class="dashboard-layout">
+        <div>
+          <div class="glass-card">
+            <h2 class="section-title"><i data-lucide="list"></i> Active Jobs (ERC-8183)</h2>
+            <div id="jobs-list" class="job-grid">
+              <div class="loader-container">
+                <div class="spinner"></div>
+                <p>Loading jobs from contract...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="glass-card">
+            <h2 class="section-title"><i data-lucide="plus-circle"></i> Create Job Escrow</h2>
+            <form id="form-create-job">
+              <div class="form-group">
+                <label for="job-provider">Provider Agent Owner (Wallet Address)</label>
+                <input type="text" id="job-provider" class="form-control" placeholder="0x..." required>
+              </div>
+              <div class="form-group">
+                <label for="job-evaluator">Evaluator (Usually Client Address)</label>
+                <input type="text" id="job-evaluator" class="form-control" placeholder="0x..." required>
+              </div>
+              <div class="form-group">
+                <label for="job-expiry">Expiry Timeline (Days)</label>
+                <input type="number" id="job-expiry" class="form-control" value="7" min="1" required>
+              </div>
+              <div class="form-group">
+                <label for="job-desc">Job Description & Terms</label>
+                <textarea id="job-desc" class="form-control" placeholder="Define deliverables..." required></textarea>
+              </div>
+              <button type="submit" class="btn-primary">
+                <i data-lucide="file-signature"></i> Create Onchain Job
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: SWAP / FX (DEFAULT ROUTE) -->
+    <section id="swap" class="page-section active">
+      <div class="swap-page-wrapper">
+        <div class="swap-card-container">
+          <div class="swap-card">
+            <!-- Swap Card Header -->
+            <div class="swap-card-header">
+              <div class="swap-card-header-left">
+                <h2>Swap</h2>
+                <p>Trade stablecoins on Arc Testnet</p>
+              </div>
+              <div class="swap-card-actions">
+                <button type="button" class="swap-icon-btn" id="btn-depth-indicators" title="Liquidity Pool Depth">
+                  <i data-lucide="bar-chart-2"></i>
+                </button>
+                <button type="button" class="swap-icon-btn" title="Settings" onclick="document.getElementById('swap-analytics-panel').classList.toggle('open');">
+                  <i data-lucide="settings"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Main Swap Form -->
+            <form id="form-swap">
+              <!-- "FROM" Token Box (You Pay) -->
+              <div class="swap-token-box">
+                <div class="swap-token-box-header">
+                  <span>You Pay</span>
+                  <span id="display-you-pay-balance" style="cursor: pointer;">Balance: 0.00 USDC</span>
+                </div>
+                <div class="swap-token-box-main">
+                  <input type="number" id="swap-pay-amount" class="swap-amount-input" placeholder="0.0" value="0" min="0" step="0.01" autocomplete="off" required>
+                  <div class="swap-token-badge">
+                    <div class="swap-token-icon-circle usdc">$</div>
+                    <select id="swap-pay-token">
+                      <option value="USDC">USDC</option>
+                      <option value="EURC">EURC</option>
+                      <option value="USYC">USYC</option>
+                    </select>
+                  </div>
+                </div>
+                <!-- Mirror display element for legacy JS compatibility -->
+                <div style="display: none;" id="display-you-pay-amount">0</div>
+              </div>
+
+              <!-- Flip Token Button -->
+              <div class="swap-flip-container">
+                <button type="button" id="btn-swap-reverse" class="swap-flip-btn" title="Reverse tokens">
+                  <i data-lucide="arrow-down-up" style="width: 18px; height: 18px;"></i>
+                </button>
+              </div>
+
+              <!-- "TO" Token Box (You Receive) -->
+              <div class="swap-token-box" style="margin-top: 4px;">
+                <div class="swap-token-box-header">
+                  <span>You Receive</span>
+                  <span id="display-you-receive-balance">Balance: 0.00 EURC</span>
+                </div>
+                <div class="swap-token-box-main">
+                  <div id="display-you-receive-amount" style="font-size: 26px; font-weight: 700; color: var(--text-primary);">0.00</div>
+                  <input type="hidden" id="swap-receive-amount" value="0">
+                  <div class="swap-token-badge">
+                    <div class="swap-token-icon-circle eurc">€</div>
+                    <select id="swap-receive-token">
+                      <option value="EURC">EURC</option>
+                      <option value="USDC">USDC</option>
+                      <option value="USYC">USYC</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Exchange Rate Info -->
+              <div class="swap-rate-row">
+                <span>Exchange Rate</span>
+                <span id="swap-rate-label" class="swap-rate-value">1 USDC = 0.925 EURC</span>
+              </div>
+
+              <!-- Cross-Chain Toggle Accordion -->
+              <div style="margin-bottom: 16px; background: var(--bg-tertiary); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 12px 16px;">
+                <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-primary); margin: 0;">
+                  <span style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="globe" style="width: 16px; height: 16px; color: var(--color-primary);"></i>
+                    Cross-Chain CCTP Routing
+                  </span>
+                  <input type="checkbox" id="swap-crosschain-toggle" style="width: 16px; height: 16px; accent-color: var(--color-accent); cursor: pointer;">
+                </label>
+
+                <div id="cross-chain-options-container" style="display: none; margin-top: 12px; border-top: 1px solid var(--card-border); padding-top: 12px;">
+                  <div style="margin-bottom: 10px;">
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">Destination Chain</label>
+                    <select id="swap-dest-chain" class="form-control" style="font-size: 13px; padding: 8px 12px;">
+                      <option value="Base_Sepolia">Base Sepolia</option>
+                      <option value="Avalanche_Fuji">Avalanche Fuji</option>
+                      <option value="Ethereum_Sepolia">Ethereum Sepolia</option>
+                      <option value="Arbitrum_Sepolia">Arbitrum Sepolia</option>
+                      <option value="Optimism_Sepolia">Optimism Sepolia</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">Recipient Address</label>
+                    <input type="text" id="swap-recipient-address" class="form-control" placeholder="0x..." style="font-size: 13px; padding: 8px 12px;">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Big Primary CTA Swap Button -->
+              <button type="submit" id="btn-execute-swap" class="btn-execute-swap">
+                <span>Confirm Swap</span>
+                <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i>
+              </button>
+            </form>
+
+            <!-- Collapsible Advanced Market Analytics -->
+            <div class="swap-advanced-toggle" onclick="document.getElementById('swap-analytics-panel').classList.toggle('open');">
+              <span style="display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="activity" style="width: 15px; height: 15px; color: var(--color-accent);"></i>
+                Market Analytics & AI Signal
+              </span>
+              <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+            </div>
+
+            <div id="swap-analytics-panel" class="swap-advanced-panel">
+              <!-- Sparkline & AI Needle -->
+              <div style="background: var(--bg-tertiary); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 12px; border: 1px solid var(--card-border);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">24h FX Volatility</span>
+                  <div style="display: flex; gap: 6px; font-size: 11px; color: var(--text-muted);">
+                    <span class="sparkline-day-btn" data-day="Sun" style="cursor:pointer;">Sun</span>
+                    <span class="sparkline-day-btn" data-day="Mon" style="cursor:pointer;">Mon</span>
+                    <span class="sparkline-day-btn" data-day="Tue" style="cursor:pointer;">Tue</span>
+                    <span class="sparkline-day-btn" data-day="Wed" style="cursor:pointer;">Wed</span>
+                    <span class="sparkline-day-btn" data-day="Thu" style="cursor:pointer;">Thu</span>
+                    <span class="sparkline-day-btn" data-day="Fri" style="cursor:pointer;">Fri</span>
+                    <span class="sparkline-day-btn" data-day="Sat" style="cursor:pointer;">Sat</span>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 90px; gap: 10px; align-items: center;">
+                  <svg width="100%" height="45" viewBox="0 0 160 45" fill="none" id="swap-sparkline-svg">
+                    <path id="swap-sparkline-path" d="M0 35 Q 30 15, 60 30 T 120 10 T 160 25" stroke="#1FC7D4" stroke-width="2.5" fill="none" style="transition: d 0.6s ease;"/>
+                    <circle id="swap-sparkline-dot" cx="120" cy="10" r="4" fill="#1FC7D4" stroke="#ffffff" stroke-width="1.5" style="transition: all 0.6s ease;"/>
+                  </svg>
+
+                  <!-- Speedometer Gauge -->
+                  <div style="text-align: center;">
+                    <svg width="70" height="38" viewBox="0 0 80 45" fill="none">
+                      <path d="M10 40 A30 30 0 0 1 70 40" stroke="var(--card-border)" stroke-width="6" stroke-linecap="round"/>
+                      <path d="M10 40 A30 30 0 0 1 55 18" stroke="url(#gaugeGrad)" stroke-width="6" stroke-linecap="round"/>
+                      <circle cx="40" cy="40" r="3" fill="var(--text-primary)"/>
+                      <line id="swap-ai-needle" x1="40" y1="40" x2="25" y2="20" stroke="var(--text-primary)" stroke-width="2.5" stroke-linecap="round" style="transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);"/>
+                      <defs>
+                        <linearGradient id="gaugeGrad" x1="0" y1="0" x2="80" y2="0">
+                          <stop stop-color="#31D0AA"/>
+                          <stop offset="0.5" stop-color="#FFB237"/>
+                          <stop offset="1" stop-color="#ED4B9E"/>
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div id="swap-ai-sentiment-label" style="font-size: 10px; font-weight: 700; color: var(--color-success);">Bullish</div>
+                    <div id="swap-ai-1h-rate" style="font-size: 10px; color: var(--text-secondary);">1h: 0.925</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Liquidity Pools Depth & Balances Display -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+                <div style="background: var(--bg-tertiary); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                  <div style="color: var(--text-muted); font-size: 11px;">USDC Pool Depth</div>
+                  <div id="swap-pool-usdc-bal" style="font-weight: 700; color: var(--text-primary);">125,000 USDC</div>
+                  <div id="swap-pool-usdc-depth" style="font-size: 11px; color: var(--color-accent);">50.0%</div>
+                </div>
+                <div style="background: var(--bg-tertiary); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                  <div style="color: var(--text-muted); font-size: 11px;">EURC Pool Depth</div>
+                  <div id="swap-pool-eurc-bal" style="font-weight: 700; color: var(--text-primary);">91,000 EURC</div>
+                  <div id="swap-pool-eurc-depth" style="font-size: 11px; color: var(--color-primary);">50.0%</div>
+                </div>
+              </div>
+
+              <!-- Live Wallet Balances -->
+              <div style="display: flex; justify-content: space-between; margin-top: 10px; padding: 8px 12px; background: var(--bg-tertiary); border-radius: var(--radius-md); font-size: 12px; font-weight: 600;">
+                <span>Balances:</span>
+                <span>USDC: <span id="swap-balance-usdc">0.00</span> | EURC: <span id="swap-balance-eurc">0.00</span> | USYC: <span id="swap-balance-usyc">0.00</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Bridge Banner Below Swap -->
+          <div style="margin-top: 16px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i data-lucide="arrow-right-left" style="color: var(--color-accent); width: 20px; height: 20px;"></i>
+              <div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Need USDC on Arc?</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Bridge from Sepolia, Solana or Stellar via CCTP</div>
+              </div>
+            </div>
+            <button type="button" class="btn-secondary nav-trigger" data-target="bridge" style="padding: 6px 14px; font-size: 13px;">
+              Bridge
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: CROSS-CHAIN BRIDGE -->
+    <section id="bridge" class="page-section">
+      <div class="bridge-page-wrapper">
+        <div class="bridge-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h2 class="section-title" style="margin: 0; font-size: 1.25rem;">
+              <i data-lucide="arrow-right-left" style="color: var(--color-accent);"></i> Circle CCTP Bridge
+            </h2>
+            <span class="card-badge" style="color: var(--color-accent);">
+              <i data-lucide="rotate-cw" style="width: 12px; height: 12px; animation: spin 3s linear infinite;"></i> Live CCTP
+            </span>
+          </div>
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
+            Bridge native USDC into Arc Testnet via Circle Cross-Chain Transfer Protocol.
+          </p>
+
+          <!-- Source Chain Tabs -->
+          <div class="chain-tabs">
+            <button type="button" class="chain-tab-btn active" id="bridge-tab-evm" data-bridge-tab="evm">
+              Ethereum Sepolia
+            </button>
+            <button type="button" class="chain-tab-btn" id="bridge-tab-solana" data-bridge-tab="solana">
+              Solana Devnet
+            </button>
+            <button type="button" class="chain-tab-btn" id="bridge-tab-stellar" data-bridge-tab="stellar">
+              Stellar Testnet
+            </button>
+          </div>
+
+          <form id="form-bridge-simulation">
+            <input type="hidden" id="bridge-selected-source" value="evm">
+            
+            <!-- Wallet status/connection for Solana/Stellar -->
+            <div id="solana-wallet-section" style="display: none; margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-tertiary); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="wallet" style="width:16px; height:16px; color: var(--color-primary);"></i>
+                  <span id="solana-wallet-status" style="font-size: 13px; color: var(--text-secondary);">Phantom not connected</span>
+                </div>
+                <button type="button" id="btn-connect-solana" class="btn-secondary" style="padding: 4px 12px; font-size: 12px;">Connect Phantom</button>
+              </div>
+            </div>
+
+            <div id="stellar-wallet-section" style="display: none; margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-tertiary); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="wallet" style="width:16px; height:16px; color: var(--color-primary);"></i>
+                  <span id="stellar-wallet-status" style="font-size: 13px; color: var(--text-secondary);">Freighter not connected</span>
+                </div>
+                <button type="button" id="btn-connect-stellar" class="btn-secondary" style="padding: 4px 12px; font-size: 12px;">Connect Freighter</button>
+              </div>
+            </div>
+
+            <!-- Simulation override checkbox -->
+            <div id="bridge-sim-toggle-container" style="display: none; margin-bottom: 16px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-secondary);">
+                <input type="checkbox" id="bridge-sim-mode" checked style="width: 16px; height: 16px; accent-color: var(--color-accent);">
+                <span>Enable Demo / Simulation Mode</span>
+              </label>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label>Amount (USDC)</label>
+              <input type="number" id="bridge-amount" class="form-control" value="10.00" min="0.01" step="0.01" style="font-size: 18px; font-weight: 700;">
+            </div>
+            
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 14px; border-radius: var(--radius-pill); font-size: 16px;">
+              <i data-lucide="arrow-right-left"></i> Execute CCTP Bridge
+            </button>
+          </form>
+
+          <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px; font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="shield-check" style="width: 14px; height: 14px; color: var(--color-accent);"></i>
+              Circle Cross-Chain Protocol Security
+            </div>
+            <p>Direct burn-and-mint architecture. Zero wrapping risk, backed 1:1 by Circle native reserves.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: LENDING POOL -->
+    <section id="lending" class="page-section">
+      <!-- Lending Account Overview Top Card -->
+      <div class="card" style="margin-bottom: 24px;">
+        <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="landmark" style="color: var(--color-accent); width: 22px; height: 22px;"></i>
+          <span>Lending Account Overview</span>
+        </div>
+
+        <!-- 4 Clean Metrics Grid -->
+        <div class="lending-stats-grid">
+          <!-- Card 1: Total Supplied -->
+          <div class="lending-stat-card">
+            <div class="lending-stat-label">Total Supplied</div>
+            <div class="lending-stat-value" id="lend-supplied-value">$0.00</div>
+          </div>
+
+          <!-- Card 2: Borrow Limit -->
+          <div class="lending-stat-card">
+            <div class="lending-stat-label">Borrow Limit</div>
+            <div class="lending-stat-value" id="lend-limit-value">$0.00</div>
+          </div>
+
+          <!-- Card 3: Total Borrowed -->
+          <div class="lending-stat-card">
+            <div class="lending-stat-label">Total Borrowed</div>
+            <div class="lending-stat-value" id="lend-borrowed-value">$0.00</div>
+          </div>
+
+          <!-- Card 4: Health Factor -->
+          <div class="lending-stat-card">
+            <div class="lending-stat-label">Health Factor</div>
+            <div class="lending-stat-value" id="lend-health-value" style="color: var(--color-success);">--</div>
+          </div>
+        </div>
+
+        <!-- Borrow Limit Gauge Progress Bar -->
+        <div style="margin-top: 8px; background: var(--bg-tertiary); padding: 14px 18px; border-radius: var(--radius-lg); border: 1px solid var(--card-border);">
+          <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">
+            <span>Borrow Limit Utilization</span>
+            <span id="lend-limit-percent" style="font-family: monospace; color: var(--text-primary);">0.0% used</span>
+          </div>
+          <div style="width: 100%; height: 8px; background: var(--bg-input); border-radius: 9999px; overflow: hidden;">
+            <div id="lend-limit-bar" style="width: 0%; height: 100%; background: var(--color-accent); transition: width 0.4s ease; border-radius: 9999px;"></div>
+          </div>
+        </div>
+
+        <!-- Hidden SVG elements for JavaScript calculation compatibility -->
+        <svg style="display: none;">
+          <circle id="lending-progress-circle" cx="0" cy="0" r="1"></circle>
+        </svg>
+        <span id="lending-ring-percent" style="display: none;">0.0%</span>
+      </div>
+
+      <!-- Asset Marketplace Table Card -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="layers" style="color: var(--color-primary); width: 20px; height: 20px;"></i>
+            Asset Marketplace
+          </h3>
+
+          <!-- Filter Tabs -->
+          <div class="lending-tabs-bar" id="lending-tab-container" style="margin-bottom: 0;">
+            <button type="button" class="lending-market-tab active" data-filter="all">All Assets</button>
+            <button type="button" class="lending-market-tab" data-filter="stablecoins">Stablecoins</button>
+            <button type="button" class="lending-market-tab" data-filter="yield">Yield Asset</button>
+          </div>
+        </div>
+
+        <!-- Clean Responsive Table -->
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>APY</th>
+                <th>24h Trend</th>
+                <th>Supplied</th>
+                <th>Borrowed</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="lending-market-table-body">
+              <!-- Populated dynamically via loadLendingPool() in main.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: MERCHANT PAY -->
+    <section id="merchant" class="page-section">
+      <div class="dashboard-layout">
+        <div>
+          <div class="glass-card">
+            <h2 class="section-title"><i data-lucide="link"></i> Payment Request Generator</h2>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+              Create shareable checkout requests. Clients pay directly to your wallet.
+            </p>
+            <form id="form-merchant-link">
+              <div class="form-group">
+                <label>Recipient Address</label>
+                <input type="text" id="merchant-recipient" class="form-control" placeholder="0x..." required>
+              </div>
+              <div class="form-group">
+                <label>Amount (USDC)</label>
+                <input type="number" id="merchant-amount" class="form-control" value="5.00" min="0.01" step="0.01" required>
+              </div>
+              <div class="form-group">
+                <label>Reference Note</label>
+                <input type="text" id="merchant-note" class="form-control" placeholder="Invoice #1024 / Logo Design Asset">
+              </div>
+              <button type="submit" class="btn-primary">
+                <i data-lucide="share-2"></i> Generate Checkout URL
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div>
+          <div class="glass-card">
+            <h2 class="section-title"><i data-lucide="credit-card"></i> Pay Link Output</h2>
+            <div id="merchant-link-output" style="display: flex; flex-direction: column; gap: 1rem; align-items: center; justify-content: center; min-height: 200px; text-align: center;">
+              <i data-lucide="qr-code" style="width: 48px; height: 48px; color: var(--text-muted);"></i>
+              <p style="color: var(--text-secondary);">Fill out the generator to create an instantly shareable payment check link.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: REPUTATION -->
+    <section id="reputation" class="page-section">
+      <!-- Premium Top Sub-Navigation Tab Bar -->
+      <div class="agent-hub-nav" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: rgba(255,255,255,0.015); padding: 0.35rem; border-radius: 8px; border: 1px solid var(--card-border); max-width: fit-content;">
+        <button class="agent-hub-tab" data-subtarget="agents" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;">
+          <i data-lucide="bot" style="width: 14px; height: 14px;"></i> Registry
+        </button>
+        <button class="agent-hub-tab" data-subtarget="jobs" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;">
+          <i data-lucide="briefcase" style="width: 14px; height: 14px;"></i> Job Escrows
+        </button>
+        <button class="agent-hub-tab active" data-subtarget="reputation" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;">
+          <i data-lucide="award" style="width: 14px; height: 14px;"></i> Reputation
+        </button>
+      </div>
+
+      <div class="dashboard-layout">
+        <div>
+          <div class="glass-card">
+            <h2 class="section-title"><i data-lucide="award"></i> Reputation Registry</h2>
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;" id="table-reputation">
+                <thead>
+                  <tr style="border-bottom: 2px solid var(--card-border); text-align: left;">
+                    <th style="padding: 0.75rem;">Agent ID</th>
+                    <th style="padding: 0.75rem;">Validator / Reporter</th>
+                    <th style="padding: 0.75rem;">Score</th>
+                    <th style="padding: 0.75rem;">Tag / Trigger</th>
+                    <th style="padding: 0.75rem;">Comment</th>
+                  </tr>
+                </thead>
+                <tbody id="reputation-history-body">
+                  <tr>
+                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                      Connect wallet to scan registry events.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="glass-card">
+            <h2 class="section-title"><i data-lucide="star"></i> Give Feedback</h2>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+              Record Observer ratings for agent profiles.
+            </p>
+            <form id="form-submit-feedback">
+              <div class="form-group">
+                <label for="feedback-agent-id">Agent ID</label>
+                <input type="number" id="feedback-agent-id" class="form-control" placeholder="1" required>
+              </div>
+              <div class="form-group">
+                <label for="feedback-score">Score (0 - 100)</label>
+                <input type="number" id="feedback-score" class="form-control" value="95" min="0" max="100" required>
+              </div>
+              <div class="form-group">
+                <label for="feedback-tag">Feedback Tag</label>
+                <input type="text" id="feedback-tag" class="form-control" placeholder="e.g. success_arbitrage" required>
+              </div>
+              <div class="form-group">
+                <label for="feedback-comment">Comments</label>
+                <textarea id="feedback-comment" class="form-control" placeholder="Brief comment on the job output..."></textarea>
+              </div>
+              <button type="submit" class="btn-primary">
+                <i data-lucide="check-square"></i> Record Onchain Feedback
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: PREDICTION MARKET -->
+    <section id="prediction" class="page-section">
+
+      <!-- Dual Wallet Section (Wallet Control Center) -->
+      <div class="wallet-control-panel">
+        <div class="wallet-control-header">
+          <div>
+            <h2 class="wallet-control-title">
+              <i data-lucide="wallet" style="color: var(--color-primary); width: 22px; height: 22px;"></i>
+              Wallet Control Center
+            </h2>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px; margin-bottom: 0;">
+              Dual-wallet architecture for instant, signature-free prediction market execution.
+            </p>
+          </div>
+          <div class="wallet-control-badge">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent);"></span>
+            1-Click Trading Active
+          </div>
+        </div>
+
+        <div class="wallet-control-grid">
+          <!-- 1. Main Connected Wallet -->
+          <div class="wallet-box">
+            <div>
+              <div class="wallet-box-label">
+                <span>Main Connected Wallet</span>
+                <i data-lucide="shield-check" style="width: 15px; height: 15px; color: var(--color-primary);"></i>
+              </div>
+              <div id="main-wallet-address-disp" class="wallet-box-addr">
+                Not connected
+              </div>
+            </div>
+            <div class="wallet-box-balance-row">
+              <span class="wallet-box-balance-title">Main USDC Balance</span>
+              <span class="wallet-box-balance-val">
+                <strong id="main-wallet-usdc-disp">0.00 USDC</strong>
+              </span>
+              <span style="display: none;" id="main-wallet-gas-disp">0.00 ARC</span>
+            </div>
+          </div>
+
+          <!-- 2. Portfolio Wallet (Hot) -->
+          <div class="wallet-box">
+            <!-- Not Authorized Overlay -->
+            <div id="portfolio-auth-overlay" class="portfolio-auth-overlay-box">
+              <i data-lucide="key" style="width: 28px; height: 28px; color: var(--color-accent); margin-bottom: 8px;"></i>
+              <div class="portfolio-auth-overlay-title">Authorize Portfolio Wallet</div>
+              <div class="portfolio-auth-overlay-desc">Enable 1-click popup-free trading with a one-time delegated session key.</div>
+              <button id="btn-auth-portfolio" type="button" class="btn-primary" style="padding: 8px 18px; font-size: 13px; width: auto; border-radius: 9999px;">Authorize & Sync</button>
+              <button id="btn-bypass-auth" type="button" style="background: transparent; border: none; color: var(--color-accent); font-size: 12px; text-decoration: underline; margin-top: 10px; cursor: pointer;">Trouble signing? Generate key instantly (Bypass)</button>
+            </div>
+
+            <!-- Wallet Details -->
+            <div>
+              <div class="wallet-box-label">
+                <span style="color: var(--color-primary);">Portfolio Wallet (Hot)</span>
+                <span class="status-pill" style="background: rgba(49, 208, 170, 0.15); color: var(--color-success); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px;">Ready</span>
+              </div>
+              <div id="portfolio-wallet-address-disp" class="wallet-box-addr">
+                0x...
+              </div>
+            </div>
+            <div class="wallet-box-balance-row">
+              <span class="wallet-box-balance-title">Portfolio USDC Balance</span>
+              <span class="wallet-box-balance-val">
+                <strong id="portfolio-wallet-usdc-disp" style="color: var(--color-accent);">0.00 USDC</strong>
+              </span>
+              <span style="display: none;" id="portfolio-wallet-gas-disp">0.00 ARC</span>
+            </div>
+          </div>
+
+          <!-- 3. Funds Manager -->
+          <div class="wallet-box">
+            <div class="pm-tab-row">
+              <button id="btn-pm-tab-deposit" type="button" class="pm-tab-btn active">Deposit</button>
+              <button id="btn-pm-tab-withdraw" type="button" class="pm-tab-btn">Withdraw</button>
+            </div>
+            <div class="funds-input-container">
+              <span class="funds-token-badge">USDC</span>
+              <input id="pm-transfer-asset" type="hidden" value="USDC">
+              <input id="pm-transfer-amount" type="number" step="0.0001" placeholder="0.00" class="funds-amount-field">
+            </div>
+            <button id="btn-pm-transfer-submit" type="button" class="btn-pm-submit">Deposit to Portfolio</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Positions Section -->
+      <div class="glass-card" style="margin-bottom: 2rem;">
+        <h2 class="section-title" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="award"></i> My Positions <span id="pm-positions-count-badge" style="font-size: 0.75rem; background: rgba(99,102,241,0.15); color: #818cf8; padding: 0.15rem 0.55rem; border-radius: 12px; font-weight: 700; border: 1px solid rgba(99,102,241,0.3);">(0)</span></h2>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;" id="table-pm-positions">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--card-border); text-align: left; font-size: 0.8rem; color: var(--text-secondary);">
+                <th style="padding: 0.75rem;">Market Prediction</th>
+                <th style="padding: 0.75rem; text-align: center;">Prediction Side</th>
+                <th style="padding: 0.75rem; text-align: right;">Cost Basis</th>
+                <th style="padding: 0.75rem; text-align: center;">Status</th>
+                <th style="padding: 0.75rem; text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pm-positions-body">
+              <tr>
+                <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                  Connect wallet and authorize portfolio to scan positions.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Markets Section -->
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <h2 class="section-title" style="margin: 0;"><i data-lucide="trending-up"></i> Live Markets Feed</h2>
+          
+          <!-- Filter / Search Row -->
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <input id="pm-search-input" type="text" class="form-control" placeholder="Search markets..." style="width: 200px; height: 36px; padding: 0.5rem; font-size: 0.85rem;">
+            <select id="pm-category-filter" class="form-control" style="width: 140px; height: 36px; padding: 0.5rem; font-size: 0.85rem;">
+              <option value="">All Categories</option>
+              <option value="crypto">Crypto</option>
+              <option value="politics">Politics</option>
+              <option value="pop-culture">Pop Culture</option>
+              <option value="sports">Sports</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="pm-markets-list" class="agent-grid">
+          <div class="loader-container">
+            <div class="spinner"></div>
+            <p>Fetching Polymarket events...</p>
+          </div>
+        </div>
+
+        <!-- Load More Button -->
+        <div style="text-align: center; margin-top: 2rem;">
+          <button id="btn-pm-load-more" class="btn-secondary" style="padding: 0.6rem 2rem; font-size: 0.9rem; font-weight: 600; display: none;">Load More Markets</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BETTING DRAWER (SIDEBAR) -->
+    <div id="pm-betting-drawer" class="pm-drawer-container">
+      <div class="pm-drawer-inner">
+        <div>
+          <!-- Drawer Header -->
+          <div class="pm-drawer-header">
+            <div class="pm-drawer-header-left">
+              <div class="pm-drawer-icon-glow">
+                <i data-lucide="zap" style="width: 20px; height: 20px; color: var(--color-primary);"></i>
+              </div>
+              <div>
+                <h3 class="pm-drawer-title">Place Prediction</h3>
+                <div class="pm-drawer-subtitle">Instant On-Chain Execution</div>
+              </div>
+            </div>
+            <button id="btn-close-pm-drawer" class="pm-drawer-close-btn" aria-label="Close">
+              <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+            </button>
+          </div>
+
+          <!-- Market Info Box -->
+          <div class="pm-drawer-market-card">
+            <div class="pm-drawer-market-header">
+              <span class="pm-market-badge">Arc Market</span>
+              <span id="pm-drawer-outcome-price-label" class="pm-drawer-price-label">Price: 0¢</span>
+            </div>
+            <p id="pm-drawer-question" class="pm-drawer-question-text"></p>
+          </div>
+
+          <!-- YES/NO Selector Tabs -->
+          <div class="pm-drawer-tabs-wrapper">
+            <button id="btn-drawer-tab-yes" class="pm-drawer-tab active-yes" type="button">
+              <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i> YES
+            </button>
+            <button id="btn-drawer-tab-no" class="pm-drawer-tab" type="button">
+              <i data-lucide="x-circle" style="width: 18px; height: 18px;"></i> NO
+            </button>
+          </div>
+
+          <!-- Amount Input Group -->
+          <div class="pm-drawer-input-group">
+            <div class="pm-drawer-input-header">
+              <label class="pm-drawer-input-label">Prediction Amount</label>
+              <span class="pm-drawer-collateral-label">Collateral: USDC</span>
+            </div>
+            <div class="pm-drawer-input-box">
+              <input id="pm-drawer-amount-input" type="number" class="pm-drawer-amount-field" value="10" min="0.1" step="any" placeholder="0.00">
+              <div class="pm-drawer-input-token-badge">
+                <div class="pm-token-circle">$</div>
+                <span>USDC</span>
+              </div>
+            </div>
+
+            <!-- Quick Selector Pills -->
+            <div class="pm-drawer-quick-pills">
+              <button type="button" class="btn-drawer-quick-amt pm-quick-pill" data-val="10">$10</button>
+              <button type="button" class="btn-drawer-quick-amt pm-quick-pill" data-val="50">$50</button>
+              <button type="button" class="btn-drawer-quick-amt pm-quick-pill" data-val="100">$100</button>
+              <button type="button" class="btn-drawer-quick-amt pm-quick-pill" data-val="250">$250</button>
+            </div>
+          </div>
+
+          <!-- Estimation Metrics Card -->
+          <div class="pm-drawer-est-card">
+            <div class="pm-est-row">
+              <span class="pm-est-label">Estimated Shares:</span>
+              <strong id="pm-drawer-est-shares" class="pm-est-val">0.00 YES</strong>
+            </div>
+            <div class="pm-est-row highlight">
+              <span class="pm-est-label">Potential Return:</span>
+              <strong id="pm-drawer-pot-return" class="pm-est-val green">$0.00 USDC</strong>
+            </div>
+            <div class="pm-est-row">
+              <span class="pm-est-label">Est. Net Profit:</span>
+              <strong id="pm-drawer-net-profit" class="pm-est-val blue">$0.00 (0%)</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Action Area -->
+        <div class="pm-drawer-footer">
+          <div id="pm-drawer-status" class="pm-drawer-status-box" style="display: none;">
+            Processing...
+          </div>
+          <button id="btn-pm-drawer-submit" class="pm-drawer-submit-btn" type="button">
+            <span>Place Prediction Bet</span>
+            <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="pm-drawer-backdrop" class="pm-drawer-backdrop"></div>
+
+    <!-- AI ANALYST MODAL -->
+    <div id="pm-ai-modal" class="modal-overlay" role="dialog" aria-modal="true">
+      <div class="modal-content" style="max-width: 580px; width: 95%; padding: 1.75rem; border-radius: var(--radius-xl); display: flex; flex-direction: column; max-height: 90vh;">
+        <div>
+          <div class="modal-header" style="margin-bottom: 1.25rem;">
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.2rem; color: var(--text-primary); margin: 0;">
+              <i data-lucide="cpu" style="color: var(--color-primary); width: 22px; height: 22px;"></i> Agent Analysis Engine
+            </h3>
+            <button class="modal-close modal-close-btn" id="btn-close-pm-ai-modal" aria-label="Close">&times;</button>
+          </div>
+
+          <div style="margin-bottom: 1.25rem;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.25rem; letter-spacing: 0.04em;">Evaluating Feed</div>
+            <p id="pm-ai-modal-question" style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); line-height: 1.4; margin: 0;"></p>
+          </div>
+
+          <!-- AI Gauges / Analysis Cards -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <!-- AI Confidence Card -->
+            <div style="background: var(--bg-tertiary); border: 1px solid var(--card-border); padding: 1.1rem; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+              <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.04em;">AI Confidence Gauge</span>
+              <strong id="pm-ai-modal-confidence" style="font-size: 1.5rem; color: var(--color-primary); font-weight: 800; margin-bottom: 0.5rem;">--% YES</strong>
+              
+              <!-- Visual split progress bar -->
+              <div style="width: 100%; height: 8px; background: var(--color-error); border-radius: 4px; overflow: hidden; display: flex; border: 1px solid var(--card-border);">
+                <div id="pm-ai-bar-yes" style="width: 50%; height: 100%; background: var(--color-success); transition: width 0.6s ease-out;"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.35rem; font-weight: 700;">
+                <span style="color: var(--color-success);">YES</span>
+                <span style="color: var(--color-error);">NO</span>
+              </div>
+            </div>
+
+            <!-- Suggested Bet Card -->
+            <div style="background: var(--bg-tertiary); border: 1px solid var(--card-border); padding: 1.1rem; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+              <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.04em;">Suggested Bet Size</span>
+              <strong id="pm-ai-modal-size" style="font-size: 1.5rem; color: var(--color-accent); font-weight: 800; margin-bottom: 0.5rem;">-- USDC</strong>
+              
+              <!-- Recommended Position Badge -->
+              <span id="pm-ai-modal-recommendation-badge" class="status-pill status-Funded" style="font-size: 0.7rem; padding: 0.2rem 0.7rem; font-weight: 700; border-radius: 9999px;">Buy YES</span>
+            </div>
+          </div>
+
+          <!-- Evaluation Text -->
+          <div style="background: var(--bg-tertiary); border: 1px solid var(--card-border); border-left: 4px solid var(--color-primary); padding: 1.1rem; border-radius: 16px; font-size: 0.85rem; line-height: 1.55; color: var(--text-primary); max-height: 160px; overflow-y: auto; margin-bottom: 1.25rem; font-weight: 500;" id="pm-ai-modal-desc">
+            Generating agent evaluation reports...
+          </div>
+
+          <!-- Chat Follow-up Q&A -->
+          <div style="border-top: 1px solid var(--card-border); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">Agent Q&A Chat</div>
+            <div id="pm-ai-chat-box" style="height: 130px; overflow-y: auto; background: var(--bg-tertiary); border: 1px solid var(--card-border); border-radius: 14px; padding: 0.75rem; font-size: 0.82rem; display: flex; flex-direction: column; gap: 0.5rem;">
+              <div style="color: var(--color-primary);"><strong>Agent:</strong> Ask me any follow-up questions about this prediction feed!</div>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <input id="pm-ai-chat-input" type="text" class="form-control" placeholder="Ask AI Analyst..." style="height: 38px; font-size: 0.85rem;">
+              <button id="btn-pm-ai-chat-submit" class="btn-primary" style="width: auto; height: 38px; padding: 0 1.25rem; font-size: 0.85rem;">Ask</button>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-pm-ai-use-suggestion" class="btn-primary" style="margin-top: 1.5rem; padding: 14px 24px; font-size: 15px; font-weight: 700; border-radius: var(--radius-pill);">Use Suggested Prediction Size</button>
+      </div>
+    </div>
+
+    <!-- PAGE: ACTIVITY (Modernized 3D Activity Control Center) -->
+    <section id="activity" class="page-section">
+      
+      <!-- Top Summary Metrics Grid -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 1.5rem;" class="stats-grid">
+        <div class="glass-card" style="padding: 1.1rem; display: flex; align-items: center; justify-content: space-between; border-radius: 18px;">
+          <div>
+            <div id="activity-summary-score" style="font-size: 1.7rem; font-weight: 800; color: var(--text-primary); line-height: 1.1;">85</div>
+            <div style="font-size: 0.65rem; font-weight: 800; color: #8b90a4; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.35rem;">ARC TRUST SCORE</div>
+          </div>
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="shield-check" style="width: 24px; height: 24px;"></i>
+          </div>
+        </div>
+
+        <div class="glass-card" style="padding: 1.1rem; display: flex; align-items: center; justify-content: space-between; border-radius: 18px;">
+          <div>
+            <div id="activity-summary-txs" style="font-size: 1.7rem; font-weight: 800; color: var(--text-primary); line-height: 1.1;">0 txs</div>
+            <div style="font-size: 0.65rem; font-weight: 800; color: #8b90a4; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.35rem;">LIFETIME TRANSACTIONS</div>
+          </div>
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(168, 85, 247, 0.15); color: #a855f7; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="hash" style="width: 24px; height: 24px;"></i>
+          </div>
+        </div>
+
+        <div class="glass-card" style="padding: 1.1rem; display: flex; align-items: center; justify-content: space-between; border-radius: 18px;">
+          <div>
+            <div id="activity-summary-scanned" style="font-size: 1.7rem; font-weight: 800; color: var(--text-primary); line-height: 1.1;">28.5k</div>
+            <div style="font-size: 0.65rem; font-weight: 800; color: #8b90a4; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.35rem;">SCANNED BLOCKS</div>
+          </div>
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="activity" style="width: 24px; height: 24px;"></i>
+          </div>
+        </div>
+
+        <div class="glass-card" style="padding: 1.1rem; display: flex; align-items: center; justify-content: space-between; border-radius: 18px;">
+          <div>
+            <div id="activity-summary-tier" style="font-size: 1.25rem; font-weight: 800; color: #7c4dff; line-height: 1.1;">Arc Sentinel</div>
+            <div style="font-size: 0.65rem; font-weight: 800; color: #8b90a4; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.35rem;">VALIDATOR STATUS</div>
+          </div>
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(124, 77, 255, 0.15); color: #7c4dff; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="award" style="width: 24px; height: 24px;"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Activity Split Grid -->
+      <div class="dashboard-layout" style="grid-template-columns: 340px 1fr; gap: 1.5rem; display: grid;">
+        
+        <!-- Left Column: Wallet Integrity & Asset Breakdown -->
+        <div>
+          <div class="glass-card" style="text-align: center; padding: 1.75rem; border-radius: 24px;">
+            <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <i data-lucide="shield-check" style="color: var(--accent-purple); width: 20px; height: 20px;"></i> Wallet Integrity Profile
+            </div>
+            
+            <!-- Circular Trust Gauge -->
+            <div style="position: relative; width: 140px; height: 140px; margin: 0 auto 1.25rem auto; display: flex; align-items: center; justify-content: center;">
+              <svg style="transform: rotate(-90deg); width: 140px; height: 140px;">
+                <circle cx="70" cy="70" r="58" stroke="rgba(200,210,230,0.15)" stroke-width="9" fill="transparent" />
+                <circle id="score-gauge-fill" cx="70" cy="70" r="58" stroke="url(#scoreGrad)" stroke-width="9" fill="transparent" 
+                        stroke-dasharray="364.4" stroke-dashoffset="50" stroke-linecap="round" style="transition: stroke-dashoffset 1s ease-out;" />
+                <defs>
+                  <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#3b82f6" />
+                    <stop offset="100%" stop-color="#7c4dff" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <span id="score-value" style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); line-height: 1;">85</span>
+                <span style="font-size: 0.65rem; color: #8b90a4; text-transform: uppercase; margin-top: 0.2rem; font-weight: 700; letter-spacing: 0.05em;">Arc Score</span>
+              </div>
+            </div>
+
+            <!-- Trust Badge Tier -->
+            <div style="margin-bottom: 1.5rem;">
+              <span id="trust-tier-badge" style="font-size: 0.78rem; padding: 0.4rem 1rem; border-radius: 20px; font-weight: 800; background: rgba(124, 77, 255, 0.15); color: #7c4dff; border: 1px solid rgba(124, 77, 255, 0.3); display: inline-block;">
+                Arc Sentinel
+              </span>
+            </div>
+
+            <!-- Token Holdings List -->
+            <div style="border-top: 1px solid rgba(200, 210, 230, 0.15); padding-top: 1.25rem; text-align: left; display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.85rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-secondary); font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+                  <span style="width: 22px; height: 22px; border-radius: 50%; background: #3b82f6; color: #fff; font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center;">$</span> USDC Balance:
+                </span>
+                <strong id="activity-usdc-balance" style="color: var(--text-primary); font-weight: 800;">0.00 USDC</strong>
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-secondary); font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+                  <span style="width: 22px; height: 22px; border-radius: 50%; background: #8b5cf6; color: #fff; font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center;">€</span> EURC Balance:
+                </span>
+                <strong id="activity-eurc-balance" style="color: var(--text-primary); font-weight: 800;">0.00 EURC</strong>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-secondary); font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+                  <span style="width: 22px; height: 22px; border-radius: 50%; background: #10b981; color: #fff; font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center;">Y</span> USYC Balance:
+                </span>
+                <strong id="activity-usyc-balance" style="color: var(--text-primary); font-weight: 800;">0.00 USYC</strong>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed rgba(200, 210, 230, 0.15); padding-top: 0.75rem;">
+                <span style="color: var(--text-secondary); font-weight: 600;">Native Gas (ARC):</span>
+                <strong id="activity-gas-balance" style="color: var(--text-primary); font-weight: 800;">0.00 USDC</strong>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-secondary); font-weight: 600;">Lifetime Nonce:</span>
+                <strong id="activity-tx-count" style="color: var(--text-primary); font-weight: 800;">0 txs</strong>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-secondary); font-weight: 600;">Scanned Logs:</span>
+                <strong id="activity-logs-count" style="color: var(--text-primary); font-weight: 800;">0 logs</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Activity History Control Center -->
+        <div>
+          <div class="glass-card" style="min-height: 440px; padding: 1.5rem; border-radius: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(200, 210, 230, 0.15); padding-bottom: 0.85rem; margin-bottom: 1rem;">
+                <h2 class="section-title" style="margin: 0; font-size: 1rem;"><i data-lucide="list" style="color: #7c4dff;"></i> Onchain Activity Log</h2>
+                <div style="font-size: 0.78rem; font-weight: 700; color: #10b981; display: flex; gap: 0.4rem; align-items: center; background: rgba(16, 185, 129, 0.1); padding: 0.3rem 0.75rem; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                  <span style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                  Arc Testnet Live Scanner
+                </div>
+              </div>
+
+              <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;" id="table-activity">
+                  <thead>
+                    <tr style="border-bottom: 1px solid rgba(200, 210, 230, 0.15); text-align: left; font-size: 0.75rem; font-weight: 700; color: #8b90a4; text-transform: uppercase;">
+                      <th style="padding: 0.85rem 0.5rem;">Action Type</th>
+                      <th style="padding: 0.85rem 0.5rem;">Tx Hash</th>
+                      <th style="padding: 0.85rem 0.5rem;">Block</th>
+                      <th style="padding: 0.85rem 0.5rem; text-align: right;">Amount & Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="activity-history-body">
+                    <tr>
+                      <td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        Connect wallet to scan account activities onchain.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: WALLET PROVIDER CHOOSE -->
+  <div id="modal-providers" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content wallet-modal-container">
+      <div class="modal-header wallet-modal-header">
+        <div style="display: flex; align-items: center; gap: 0.85rem;">
+          <div class="wallet-modal-icon-glow">
+            <i data-lucide="wallet" style="width: 22px; height: 22px;"></i>
+          </div>
+          <div>
+            <h3 class="modal-title">Select a Wallet</h3>
+            <div class="wallet-modal-subtitle">Connect to start swapping, lending & predictions</div>
+          </div>
+        </div>
+        <button class="modal-close modal-close-btn wallet-modal-close" id="btn-close-providers" aria-label="Close">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+
+      <div id="provider-buttons-container" class="wallet-providers-list">
+        <!-- Filled by JS -->
+      </div>
+
+      <div class="wallet-modal-disclaimer">
+        <i data-lucide="info" style="width: 15px; height: 15px; flex-shrink: 0;"></i>
+        <span>Arc Testnet Network &middot; Free Test Tokens &middot; Zero Real Value</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SET BUDGET (Provider) -->
+  <div id="modal-set-budget" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Set Job Budget</h3>
+        <button class="modal-close modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <form id="form-set-budget">
+        <input type="hidden" id="budget-job-id">
+        <div class="form-group">
+          <label>Budget Amount (USDC)</label>
+          <input type="number" id="budget-amount" class="form-control" placeholder="5.00" min="0.01" step="0.01" required>
+        </div>
+        <button type="submit" class="btn-primary">Set Budget & Accept Job</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: FUND ESCROW (Client) -->
+  <div id="modal-fund" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Fund Escrow (Approve + Fund)</h3>
+        <button class="modal-close modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <div style="margin-bottom: 1.5rem;">
+        <p>This will lock <strong id="fund-display-amount">0.00</strong> USDC in the job escrow.</p>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">
+          First transaction will approve USDC spending; the second transaction will fund the contract.
+        </p>
+      </div>
+      <form id="form-fund-job">
+        <input type="hidden" id="fund-job-id">
+        <input type="hidden" id="fund-job-amount">
+        <button type="submit" class="btn-primary">Approve & Fund</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SUBMIT DELIVERABLE (Provider) -->
+  <div id="modal-submit-work" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Submit Work Deliverable</h3>
+        <button class="modal-close modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <form id="form-submit-work">
+        <input type="hidden" id="submit-work-job-id">
+        <div class="form-group">
+          <label>Deliverable text or URL to hash</label>
+          <textarea id="deliverable-text" class="form-control" placeholder="e.g. ipfs://bafkreihash..." required></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Submit Hash onchain</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: COMPLETE JOB (Client/Evaluator) -->
+  <div id="modal-complete-job" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Complete Job & Release Escrow</h3>
+        <button class="modal-close modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <div style="margin-bottom: 1.5rem;">
+        <p>Are you sure the deliverables meet the specifications? Releases payment to provider.</p>
+      </div>
+      <form id="form-complete-job-confirm">
+        <input type="hidden" id="complete-job-id">
+        <div class="form-group">
+          <label>Reason / Completion metadata</label>
+          <input type="text" id="complete-reason" class="form-control" placeholder="Work approved" required>
+        </div>
+        <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+          Approve & Release Payment
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SUPPLY POOL ASSET -->
+  <div id="modal-supply-pool" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="supply-modal-title">Supply Assets</h3>
+        <button class="modal-close modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <form id="form-supply-confirm">
+        <input type="hidden" id="supply-asset-name">
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label style="margin: 0;">Amount to Supply</label>
+            <button type="button" id="btn-supply-max" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: var(--accent-blue); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; cursor: pointer;">Max</button>
+          </div>
+          <input type="number" id="supply-amount-input" class="form-control" placeholder="10.00" min="0.01" step="0.01" required>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Supplying assets transfers tokens on-chain into your vault, earning yield and unlocking borrow capacity.
+        </p>
+        <button type="submit" class="btn-primary">Execute Supply Tx</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: WITHDRAW POOL ASSET -->
+  <div id="modal-withdraw-pool" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="withdraw-modal-title">Withdraw Supplied Assets</h3>
+        <button class="modal-close modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <form id="form-withdraw-confirm">
+        <input type="hidden" id="withdraw-asset-name">
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label style="margin: 0;">Amount to Withdraw</label>
+            <button type="button" id="btn-withdraw-max" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: var(--accent-blue); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; cursor: pointer;">Max</button>
+          </div>
+          <input type="number" id="withdraw-amount-input" class="form-control" placeholder="5.00" min="0.01" step="0.01" required>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Withdraws your supplied tokens back to your wallet on-chain if your borrow Health Factor remains safe (≥ 1.0).
+        </p>
+        <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, var(--accent-pink) 0%, var(--accent-purple) 100%);">Execute Withdraw Tx</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: BORROW POOL ASSET -->
+  <div id="modal-borrow-pool" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="borrow-modal-title">Borrow Assets</h3>
+        <button class="modal-close modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <form id="form-borrow-confirm">
+        <input type="hidden" id="borrow-asset-name">
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label style="margin: 0;">Amount to Borrow</label>
+            <button type="button" id="btn-borrow-max" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: var(--accent-blue); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; cursor: pointer;">Max Capacity</button>
+          </div>
+          <input type="number" id="borrow-amount-input" class="form-control" placeholder="5.00" min="0.01" step="0.01" required>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Borrows tokens on-chain into your wallet against your supplied collateral limit.
+        </p>
+        <button type="submit" class="btn-primary">Execute Borrow Tx</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REPAY POOL DEBT -->
+  <div id="modal-repay-pool" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="repay-modal-title">Repay Borrowed Debt</h3>
+        <button class="modal-close modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <form id="form-repay-confirm">
+        <input type="hidden" id="repay-asset-name">
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label style="margin: 0;">Amount to Repay</label>
+            <button type="button" id="btn-repay-max" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; cursor: pointer;">Repay All</button>
+          </div>
+          <input type="number" id="repay-amount-input" class="form-control" placeholder="5.00" min="0.01" step="0.01" required>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Transfers tokens back to the pool vault on-chain to pay off your outstanding loan and improve your Health Factor.
+        </p>
+        <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">Execute Repay Tx</button>
+      </form>
+    </div>
+  </div>
+  <!-- Modal: Liquidity Pool Depth Details -->
+  <div id="modal-pool-depth" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.15rem; color: var(--text-primary);">
+          <i data-lucide="layers" style="color: #7c4dff;"></i> Stablecoin Liquidity Depth
+        </h3>
+        <button type="button" class="modal-close modal-close-btn">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+        <!-- TVL Summary Card -->
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); border-radius: 14px; padding: 1rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Pool TVL</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary);">$24,020,700</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">24h Trading Volume</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: #10b981;">$8,410,250</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Slippage Tolerance</div>
+            <div style="font-size: 0.9rem; font-weight: 700; color: #3b82f6;">&lt; 0.01% (Optimal)</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Pool Fee Tier</div>
+            <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">0.01% Low-Fee FX</div>
+          </div>
+        </div>
+
+        <!-- Reserve Depths Breakdown -->
+        <div>
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.6rem;">Reserve Breakdown</div>
+          
+          <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+            <!-- USDC Reserve Bar -->
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.25rem;">
+                <span style="font-weight: 700; color: #3b82f6;">USDC Liquidity Reserve</span>
+                <span id="modal-usdc-depth-val" style="font-family: monospace; color: var(--text-primary);">12,480,500 USDC (51.9%)</span>
+              </div>
+              <div style="height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;">
+                <div id="modal-usdc-bar" style="width: 51.9%; height: 100%; background: #3b82f6; border-radius: 4px;"></div>
+              </div>
+            </div>
+
+            <!-- EURC Reserve Bar -->
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.25rem;">
+                <span style="font-weight: 700; color: #8b5cf6;">EURC Liquidity Reserve</span>
+                <span id="modal-eurc-depth-val" style="font-family: monospace; color: var(--text-primary);">11,540,200 EURC (48.1%)</span>
+              </div>
+              <div style="height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;">
+                <div id="modal-eurc-bar" style="width: 48.1%; height: 100%; background: #8b5cf6; border-radius: 4px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary modal-close-btn" style="width: 100%; padding: 0.7rem; font-size: 0.9rem;">Close Inspector</button>
+    </div>
+  </div>
+
+  <!-- Modal: What is USDC SETTLED? -->
+  <div id="modal-usdc-settled-info" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); font-size: 1.15rem;">
+          <i data-lucide="help-circle" style="color: #7c4dff;"></i> What is USDC SETTLED?
+        </h3>
+        <button type="button" class="modal-close modal-close-btn">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; line-height: 1.5;">
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">
+          <strong style="color: var(--text-primary);">USDC SETTLED</strong> represents the total cumulative volume of finalized, on-chain USDC transactions cleared across the entire Arc Testnet ecosystem.
+        </p>
+
+        <div style="background: rgba(124, 77, 255, 0.05); border: 1px solid rgba(124, 77, 255, 0.2); border-radius: 12px; padding: 1rem;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+            Primary Ecosystem Use Cases:
+          </div>
+          <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.82rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.45rem;">
+            <li><strong style="color: var(--text-primary);">AI Agent Escrows:</strong> Finalized USDC payouts released to AI service providers upon job completion.</li>
+            <li><strong style="color: var(--text-primary);">Stablecoin FX Swaps:</strong> Total trading volume swapped between USDC, EURC, and USYC.</li>
+            <li><strong style="color: var(--text-primary);">Circle CCTP Cross-Chain Mints:</strong> USDC bridged from Sepolia, Solana Devnet, or Stellar Testnet.</li>
+            <li><strong style="color: var(--text-primary);">Merchant Payments:</strong> Direct USDC checkout settlements processed via payment links.</li>
+          </ul>
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--text-muted); background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--card-border);">
+          💡 <strong style="color: var(--text-primary);">Key Protocol Metric:</strong> Serves as a primary indicator of liquidity flow, smart contract security, and transaction velocity on Arc Testnet.
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary modal-close-btn" style="width: 100%; padding: 0.7rem; font-size: 0.9rem;">Got It</button>
+    </div>
+  </div>
+
+  <!-- HERMES AI COPILOT FLOATING BUTTON & DRAWER -->
+  <div id="hermes-backdrop" class="hermes-backdrop"></div>
+  <button id="hermes-bubble" class="hermes-bubble" title="Chat with Hermes AI Copilot" type="button">
+    <i data-lucide="message-square" class="hermes-icon"></i>
+    <span class="hermes-badge-pulse"></span>
+  </button>
+
+  <div id="hermes-drawer" class="hermes-drawer">
+    <div class="hermes-header">
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
+        <div>
+          <h4 style="margin:0; font-weight:700; color:var(--text-primary);">Hermes Copilot</h4>
+        </div>
+      </div>
+      <button id="hermes-close" class="hermes-close">&times;</button>
+    </div>
+
+    <!-- API Key Config (Optional if VITE_GEMINI_API_KEY is defined) -->
+    <div id="hermes-config-panel" class="hermes-config-panel">
+      <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center;">
+        <span>Configure Gemini API Key:</span>
+        <a href="https://aistudio.google.com/" target="_blank" style="color:var(--accent-blue); text-decoration:none; font-size:0.7rem;">Get Free Key <i data-lucide="external-link" style="width:10px; height:10px; display:inline-block; vertical-align:middle;"></i></a>
+      </div>
+      <div style="display:flex; gap:0.35rem;">
+        <input type="password" id="hermes-api-key-input" class="form-control" style="font-size:0.75rem; height:32px; padding:0.25rem 0.5rem;" placeholder="Paste API Key here...">
+        <button id="hermes-save-api-key" class="btn-primary" style="padding:0; width:50px; height:32px; font-size:0.75rem;">Save</button>
+      </div>
+    </div>
+
+    <!-- Chat Messages list -->
+    <div id="hermes-messages" class="hermes-messages">
+      <!-- Welcome message -->
+      <div class="hermes-msg system">
+        <div class="msg-bubble">
+          Hi! I am <strong>Hermes</strong>, your intelligent Web3 Copilot. I have deep integration into the Arc blockchain and this app. You can ask me to:
+          <ul style="margin: 0.5rem 0 0 1.25rem; padding: 0; font-size: 0.75rem; line-height: 1.4;">
+            <li>"Go to the lending pool page"</li>
+            <li>"Switch to dark/light theme"</li>
+            <li>"Calculate yield of 500 USDC at 5.5% APY for 5 years"</li>
+            <li>"Check my wallet balance and score details"</li>
+            <li>"Swap 20 USDC to EURC"</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Footer -->
+    <div class="hermes-footer">
+      <form id="hermes-chat-form" style="display:flex; gap:0.5rem; width:100%;">
+        <input type="text" id="hermes-chat-input" class="form-control" placeholder="Ask Hermes..." autocomplete="off" required style="font-size:0.85rem; height:38px;">
+        <button type="submit" id="hermes-chat-send" class="btn-primary" style="padding:0; width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:8px;">
+          <i data-lucide="send" style="width:16px; height:16px;"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MOBILE BOTTOM NAVIGATION BAR -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-btn nav-btn active" data-target="swap">
+      <i data-lucide="repeat"></i>
+      <span>Swap</span>
+    </button>
+    <button class="mobile-nav-btn nav-btn" data-target="lending">
+      <i data-lucide="landmark"></i>
+      <span>Lend</span>
+    </button>
+    <button class="mobile-nav-btn nav-btn" data-target="bridge">
+      <i data-lucide="arrow-right-left"></i>
+      <span>Bridge</span>
+    </button>
+    <button class="mobile-nav-btn" id="btn-mobile-more">
+      <i data-lucide="menu"></i>
+      <span>More</span>
+    </button>
+  </nav>
+
+  <!-- Mobile More Sheet & Backdrop -->
+  <div id="mobile-more-backdrop" class="mobile-more-backdrop"></div>
+  <div id="mobile-more-sheet" class="mobile-more-sheet">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h4 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">More Features</h4>
+      <button id="btn-close-mobile-more" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px;">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+      </button>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <button class="btn-secondary nav-btn" data-target="prediction" style="justify-content: flex-start; padding: 10px 14px;">
+        <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i> Predict
+      </button>
+      <button class="btn-secondary nav-btn" data-target="agents" style="justify-content: flex-start; padding: 10px 14px;">
+        <i data-lucide="cpu" style="width: 16px; height: 16px;"></i> Agents
+      </button>
+      <button class="btn-secondary nav-btn" data-target="jobs" style="justify-content: flex-start; padding: 10px 14px;">
+        <i data-lucide="briefcase" style="width: 16px; height: 16px;"></i> Escrows
+      </button>
+      <button class="btn-secondary nav-btn" data-target="merchant" style="justify-content: flex-start; padding: 10px 14px;">
+        <i data-lucide="receipt" style="width: 16px; height: 16px;"></i> Pay
+      </button>
+      <button class="btn-secondary nav-btn" data-target="activity" style="justify-content: flex-start; padding: 10px 14px;">
+        <i data-lucide="history" style="width: 16px; height: 16px;"></i> Activity
+      </button>
+      <button class="btn-secondary nav-btn" data-target="dashboard" style="justify-content: flex-start; padding: 10px 14px;">
+        <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i> Portfolio
+      </button>
+      <button id="btn-open-hermes-mobile" type="button" class="btn-secondary" style="justify-content: flex-start; padding: 10px 14px; grid-column: span 2;">
+        <i data-lucide="message-square" style="width: 16px; height: 16px; color: var(--color-primary);"></i> Hermes AI Copilot
+      </button>
+    </div>
+    <div style="margin-top: 16px; border-top: 1px solid var(--card-border); padding-top: 14px; text-align: center;">
+      <a href="/docs.html" target="_blank" style="font-size: 13px; color: var(--color-primary); font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="book-open" style="width: 15px; height: 15px;"></i> Technical Documentation ↗
+      </a>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
